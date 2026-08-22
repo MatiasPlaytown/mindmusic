@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MindMusic — Estado</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="no-nav">
+
+<div id="mood-container" class="page">
+  <header class="app-header">
+    <a class="back-btn" href="javascript:history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Volver
+    </a>
+    <a class="avatar js-avatar" href="perfil.html">I</a>
+  </header>
+
+  <div id="mood-loading" class="loading-wrap">
+    <div class="spinner"></div>
+    Cargando...
+  </div>
+
+  <div id="mood-content" style="display:none">
+    <section class="hero" style="padding-top:0">
+      <div class="mood-icon" id="mood-icon" style="margin:0 auto 16px"></div>
+      <h1 class="hero-title" id="mood-title"></h1>
+      <p class="hero-sub" id="mood-sub"></p>
+    </section>
+
+    <div class="section-head">
+      <h2>Contenido para este estado</h2>
+    </div>
+    <div class="track-grid" id="mood-tracks"></div>
+  </div>
+</div>
+
+<script src="mock-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

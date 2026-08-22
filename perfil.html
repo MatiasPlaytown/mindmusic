@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MindMusic — Perfil</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="perfil-container" class="page">
+  <header class="app-header">
+    <div class="brand">MINDMUSIC<small>by Playtown</small></div>
+    <div class="header-actions">
+      <a class="icon-btn" href="config.html" aria-label="Configuración">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <div class="profile-head">
+    <div class="avatar" id="perfil-avatar" style="width:76px;height:76px;font-size:26px">I</div>
+    <h2 id="perfil-name">Invitado</h2>
+    <p>Miembro MindMusic</p>
+  </div>
+
+  <div class="form-block">
+    <div class="form-row">
+      <div>
+        <div class="label">Nombre</div>
+        <div class="value" id="perfil-name-value">Invitado</div>
+      </div>
+      <button class="edit-link" id="edit-name-btn">Editar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="edit-modal">
+  <div class="modal-sheet">
+    <h3>Editar nombre</h3>
+    <input id="modal-input" type="text" placeholder="Tu nombre" maxlength="30">
+    <div class="modal-actions">
+      <button class="cancel" id="modal-cancel">Cancelar</button>
+      <button class="save" id="modal-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<nav class="app-nav">
+  <div class="nav-top"><div class="brand">MINDMUSIC<small>by Playtown</small></div></div>
+  <div class="nav-links">
+    <a class="nav-item" id="nav-home" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      <span>Inicio</span>
+    </a>
+    <a class="nav-item" id="nav-explorar" href="explorar.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-4 2-2 4 4-2z"/></svg>
+      <span>Explorar</span>
+    </a>
+    <a class="nav-item" id="nav-perfil" href="perfil.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+      <span>Perfil</span>
+    </a>
+    <div class="nav-sep"></div>
+    <a class="nav-item" id="nav-config" href="config.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      <span>Config</span>
+    </a>
+  </div>
+  <div class="nav-bottom">
+    <a class="nav-user" href="perfil.html">
+      <div class="avatar js-avatar">I</div>
+      <div>
+        <p class="nav-user-name">Invitado</p>
+        <p class="nav-user-sub">Miembro MindMusic</p>
+      </div>
+    </a>
+  </div>
+</nav>
+
+<script src="mock-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MindMusic — Reproductor</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="no-nav">
+
+<div id="player-container" class="page">
+  <header class="app-header">
+    <a class="back-btn" href="javascript:history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Volver
+    </a>
+    <div class="header-actions">
+      <a class="icon-btn" href="config.html" aria-label="Configuración">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </a>
+      <a class="avatar js-avatar" href="perfil.html">I</a>
+    </div>
+  </header>
+
+  <div id="player-loading" class="loading-wrap">
+    <div class="spinner"></div>
+    Cargando...
+  </div>
+
+  <div id="player-content" style="display:none">
+    <span class="badge center" id="mood-badge">MOOD ACTUAL</span>
+
+    <div class="player-wrap">
+      <div class="player-visual" id="player-visual">
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="ring r3"></div>
+        <div class="player-core" id="player-core">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+
+      <h1 class="player-title" id="player-title"></h1>
+      <p class="player-desc" id="player-desc"></p>
+
+      <div class="progress-wrap">
+        <div class="progress-track" id="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-times">
+          <span id="time-current">0:00</span>
+          <span id="time-total">0:00</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="shuffle-btn" aria-label="Aleatorio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5L15 18h3.5M3 18h3.5l2-2.7M16 6h2.5M18.5 6 16 3.5M18.5 6 16 8.5M18.5 18 16 15.5M18.5 18 16 20.5"/></svg>
+        </button>
+        <button class="ctrl-btn" id="prev-btn" aria-label="Anterior">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg>
+        </button>
+        <button class="play-main" id="play-main" aria-label="Reproducir">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="next-btn" aria-label="Siguiente">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="repeat-btn" aria-label="Repetir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="player-audio" preload="metadata"></audio>
+</div>
+
+<script src="mock-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
