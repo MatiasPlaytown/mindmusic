@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MindMusic — Estado</title>
+<title>MindMusic — Playlist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 </head>
 <body class="no-nav">
 
-<div id="mood-container" class="page">
+<div id="playlist-container" class="page">
   <header class="app-header">
     <a class="back-btn" href="javascript:history.back()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -20,22 +20,25 @@
     <a class="avatar js-avatar" href="perfil.html">I</a>
   </header>
 
-  <div id="mood-loading" class="loading-wrap">
+  <div id="playlist-loading" class="loading-wrap">
     <div class="spinner"></div>
     Cargando...
   </div>
 
-  <div id="mood-content" style="display:none">
-    <section class="hero" style="padding-top:0">
-      <div class="mood-icon mood-icon-lg" id="mood-icon" style="margin:0 auto 16px"></div>
-      <h1 class="hero-title" id="mood-title"></h1>
-      <p class="hero-sub" id="mood-sub"></p>
-    </section>
+  <div id="playlist-content" style="display:none">
+    <div class="playlist-head">
+      <div class="cover cover--stack" id="playlist-cover"></div>
+      <div class="meta">
+        <p class="eyebrow" id="playlist-eyebrow"></p>
+        <h1 id="playlist-title"></h1>
+        <p id="playlist-desc"></p>
+      </div>
+    </div>
 
     <div class="section-head">
-      <h2>Contenido para este estado</h2>
+      <h2>Temas de esta playlist</h2>
     </div>
-    <div class="track-grid" id="mood-tracks"></div>
+    <div class="tracklist" id="playlist-tracklist"></div>
   </div>
 </div>
 

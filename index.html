@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MindMusic — Inicio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,22 +16,22 @@
     <div class="brand">MINDMUSIC<small>by Playtown</small></div>
     <div class="header-greet">Hola, <span class="js-greet-name">Invitado</span></div>
     <div class="header-actions">
-      <button class="icon-btn" aria-label="Buscar" onclick="document.getElementById('home-search').focus()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      </button>
       <a class="avatar js-avatar" href="perfil.html">I</a>
     </div>
   </header>
 
   <section class="hero">
+    <div class="hero-disc-deco" aria-hidden="true"></div>
     <p class="eyebrow">Primeros auxilios emocionales</p>
     <h1 class="hero-title">¿Cómo estás, <span class="js-greet-name">Invitado</span>?</h1>
-    <p class="hero-sub">Elegí tu estado de ánimo y encontrá el sonido que lo acompaña.</p>
+    <p class="hero-sub">Tocá el estado que más se parece a este momento. Ahí empieza el sonido.</p>
   </section>
 
-  <div class="search-bar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-    <input id="home-search" type="text" placeholder="Buscar por estado o audio...">
+  <div class="quick-moods">
+    <a class="quick-mood-chip" href="mood.html?id=calma">Triste</a>
+    <a class="quick-mood-chip" href="mood.html?id=energia">Cansado</a>
+    <a class="quick-mood-chip" href="mood.html?id=foco">Con ganas de enfocar</a>
+    <a class="quick-mood-chip" href="mood.html?id=alegria">Contento</a>
   </div>
 
   <div class="mood-grid" id="home-moods"></div>

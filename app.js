@@ -75,6 +75,30 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
+// Portada tipo disco/funda: cada ítem de audio se dibuja como un vinilo
+// dentro de una funda con el color del mood. Las playlists se ven como una
+// pila de fundas (varios discos adentro), no como un ítem suelto más.
+function coverHTML(kind, mood, trackCount) {
+  const stackClass = kind === 'playlist' ? ' cover--stack' : '';
+  const icon = mood ? (MOOD_ICONS[mood.icon] || '') : '';
+  const moodBadge = mood ? `<span class="cover-mood-badge">${escapeHtml(mood.name)}</span>` : '';
+  const countBadge = kind === 'playlist' && trackCount != null ? `<span class="cover-count">${trackCount} temas</span>` : '';
+  return `
+    <div class="cover${stackClass}" style="--m-ink:${mood ? mood.ink : ''}">
+      ${moodBadge}
+      <div class="disc"><div class="disc-icon">${icon}</div></div>
+      ${countBadge}
+    </div>
+  `;
+}
+
+function buildFeed(tracks, playlists) {
+  return [
+    ...tracks.map((t) => ({ ...t, kind: 'track' })),
+    ...playlists.map((p) => ({ ...p, kind: 'playlist' })),
+  ];
+}
+
 // ───────────────────────── LOCAL STORAGE ─────────────────────────
 
 const PROFILE_KEY = 'mm_profile';
@@ -131,6 +155,21 @@ async function fetchTrackById(id) {
   return MOCK_DB.tracks.find((t) => t.id === id) || null;
 }
 
+async function fetchAllPlaylists() {
+  await apiDelay();
+  return MOCK_DB.playlists;
+}
+
+async function fetchPlaylistsByMood(moodId) {
+  await apiDelay();
+  return MOCK_DB.playlists.filter((p) => p.moodId === moodId);
+}
+
+async function fetchPlaylistById(id) {
+  await apiDelay();
+  return MOCK_DB.playlists.find((p) => p.id === id) || null;
+}
+
 // ───────────────────────── NAV ─────────────────────────
 
 function initNav() {
@@ -153,7 +192,7 @@ function initNav() {
 
 // ───────────────────────── HOME ─────────────────────────
 
-let homeAllTracks = [];
+let homeAllItems = [];
 let homeActiveType = 'todos';
 
 async function initHome() {
@@ -161,17 +200,12 @@ async function initHome() {
   renderMoodSkeletons();
   renderTrackSkeletons('home-tracks');
 
-  const [moods, tracks] = await Promise.all([fetchMoodList(), fetchAllTracks()]);
-  homeAllTracks = tracks;
+  const [moods, tracks, playlists] = await Promise.all([fetchMoodList(), fetchAllTracks(), fetchAllPlaylists()]);
+  homeAllItems = buildFeed(tracks, playlists);
 
   renderMoodGrid(moods.slice(0, 4), document.getElementById('home-moods'));
   renderContentTabs();
   renderHomeTracks();
-
-  const searchInput = document.getElementById('home-search');
-  searchInput?.addEventListener('input', debounce((e) => {
-    renderHomeTracks(e.target.value.trim().toLowerCase());
-  }, 150));
 }
 
 function renderMoodSkeletons() {
@@ -179,7 +213,7 @@ function renderMoodSkeletons() {
   if (!el) return;
   el.innerHTML = Array.from({ length: 4 }).map(() => `
     <div class="mood-card">
-      <div class="skeleton" style="width:52px;height:52px;border-radius:50%;margin-bottom:12px"></div>
+      <div class="skeleton" style="width:44px;height:44px;border-radius:50%;margin-bottom:14px"></div>
       <div class="skeleton skel-line" style="width:70%"></div>
       <div class="skeleton skel-line short"></div>
     </div>
@@ -189,8 +223,8 @@ function renderMoodSkeletons() {
 function renderMoodGrid(moods, el) {
   if (!el) return;
   el.innerHTML = moods.map((m) => `
-    <a class="mood-card" href="mood.html?id=${encodeURIComponent(m.id)}">
-      <div class="mood-icon" style="background:${m.grad}">${MOOD_ICONS[m.icon] || ''}</div>
+    <a class="mood-card" href="mood.html?id=${encodeURIComponent(m.id)}" style="--m-ink:${m.ink}">
+      <div class="mood-icon">${MOOD_ICONS[m.icon] || ''}</div>
       <h3>${escapeHtml(m.name)}</h3>
       <p>${escapeHtml(m.subtitle)}</p>
       <span class="pill-btn">${escapeHtml(m.cta)}</span>
@@ -209,7 +243,7 @@ function renderContentTabs() {
     btn.addEventListener('click', () => {
       homeActiveType = btn.dataset.type;
       el.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b === btn));
-      renderHomeTracks(document.getElementById('home-search')?.value.trim().toLowerCase());
+      renderHomeTracks();
     });
   });
 }
@@ -228,24 +262,30 @@ function renderTrackSkeletons(containerId, count = 4) {
   `).join('');
 }
 
-function renderTrackGrid(tracks, containerId) {
+// items mezcla tracks sueltos (cápsulas/mensajes/guiada) y playlists —
+// cada uno navega a un destino distinto: player.html vs. playlist.html.
+function renderTrackGrid(items, containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  if (!tracks.length) {
+  if (!items.length) {
     el.innerHTML = `<div class="empty-state">No encontramos contenido para esa búsqueda.</div>`;
     return;
   }
-  el.innerHTML = tracks.map((t) => {
-    const mood = moodById(t.moodId);
+  el.innerHTML = items.map((item) => {
+    const mood = moodById(item.moodId);
+    const isPlaylist = item.kind === 'playlist';
+    const href = isPlaylist
+      ? `playlist.html?id=${encodeURIComponent(item.id)}`
+      : `player.html?id=${encodeURIComponent(item.id)}`;
+    const meta = isPlaylist
+      ? `Playlist · ${item.tracks.length} canciones`
+      : `${escapeHtml(contentTypeName(item.contentType))} · ${fmtTime(item.duration)}`;
     return `
-      <a class="track-card" href="player.html?id=${encodeURIComponent(t.id)}">
-        <div class="track-thumb">
-          <img src="${t.thumbnail}" alt="${escapeHtml(t.title)}" loading="lazy">
-          <span class="track-mood-badge" style="background:${mood ? mood.grad : 'rgba(0,0,0,.4)'}">${mood ? escapeHtml(mood.name) : ''}</span>
-        </div>
+      <a class="track-card" href="${href}">
+        ${coverHTML(isPlaylist ? 'playlist' : 'track', mood, isPlaylist ? item.tracks.length : null)}
         <div class="track-body">
-          <h4>${escapeHtml(t.title)}</h4>
-          <span>${escapeHtml(contentTypeName(t.contentType))} · ${fmtTime(t.duration)}</span>
+          <h4>${escapeHtml(item.title)}</h4>
+          <span>${meta}</span>
         </div>
       </a>
     `;
@@ -253,9 +293,13 @@ function renderTrackGrid(tracks, containerId) {
 }
 
 function renderHomeTracks(query = '') {
-  let list = homeActiveType === 'todos' ? homeAllTracks : homeAllTracks.filter((t) => t.contentType === homeActiveType);
+  let list = homeActiveType === 'todos'
+    ? homeAllItems
+    : homeActiveType === 'playlists'
+      ? homeAllItems.filter((i) => i.kind === 'playlist')
+      : homeAllItems.filter((i) => i.kind === 'track' && i.contentType === homeActiveType);
   if (query) {
-    list = list.filter((t) => t.title.toLowerCase().includes(query) || moodById(t.moodId)?.name.toLowerCase().includes(query));
+    list = list.filter((i) => i.title.toLowerCase().includes(query) || moodById(i.moodId)?.name.toLowerCase().includes(query));
   }
   renderTrackGrid(list, 'home-tracks');
 }
@@ -291,14 +335,13 @@ function renderCatGrid(moods) {
     el.innerHTML = `<div class="empty-state">No encontramos ningún estado para esa búsqueda.</div>`;
     return;
   }
-  el.innerHTML = moods.map((m, i) => `
-    <a class="cat-card" href="mood.html?id=${encodeURIComponent(m.id)}">
-      <img src="https://picsum.photos/seed/cat-${m.id}/800/500" alt="${escapeHtml(m.name)}" loading="lazy">
+  el.innerHTML = moods.map((m) => `
+    <a class="cat-card" href="mood.html?id=${encodeURIComponent(m.id)}" style="--m-ink:${m.ink}">
+      <div class="cat-disc"><div class="disc-icon">${MOOD_ICONS[m.icon] || ''}</div></div>
       <div class="overlay">
         <p class="eyebrow">${escapeHtml(m.subtitle.toUpperCase())}</p>
         <h3>${escapeHtml(m.name)}</h3>
       </div>
-      <span class="cat-play">${UI_ICONS.play}</span>
     </a>
   `).join('');
 }
@@ -318,34 +361,90 @@ async function initMoodPage() {
   document.getElementById('mood-title').textContent = mood.name;
   document.getElementById('mood-sub').textContent = mood.subtitle;
   document.getElementById('mood-icon').innerHTML = MOOD_ICONS[mood.icon] || '';
-  document.getElementById('mood-icon').style.background = mood.grad;
+  document.getElementById('mood-icon').style.setProperty('--m-ink', mood.ink);
 
-  const tracks = await fetchTracksByMood(mood.id);
+  const [tracks, playlists] = await Promise.all([fetchTracksByMood(mood.id), fetchPlaylistsByMood(mood.id)]);
   document.getElementById('mood-loading').style.display = 'none';
   document.getElementById('mood-content').style.display = '';
-  renderTrackGrid(tracks, 'mood-tracks');
+  renderTrackGrid(buildFeed(tracks, playlists), 'mood-tracks');
+}
+
+// ───────────────────────── PLAYLIST ─────────────────────────
+// Acá se lee la playlist "de atrás para adelante", como el dorso de una
+// funda: todas las canciones apiladas una debajo de la otra, en orden.
+
+async function initPlaylistPage() {
+  initNav();
+  const id = new URLSearchParams(location.search).get('id');
+  const playlist = await fetchPlaylistById(id);
+
+  if (!playlist) {
+    document.getElementById('playlist-loading').innerHTML = `<div class="empty-state">No encontramos esa playlist.</div>`;
+    return;
+  }
+
+  const mood = moodById(playlist.moodId);
+
+  document.getElementById('playlist-loading').style.display = 'none';
+  document.getElementById('playlist-content').style.display = '';
+
+  const coverEl = document.getElementById('playlist-cover');
+  coverEl.innerHTML = `<div class="disc"><div class="disc-icon">${mood ? (MOOD_ICONS[mood.icon] || '') : ''}</div></div>`;
+  coverEl.style.setProperty('--m-ink', mood ? mood.ink : '');
+
+  document.getElementById('playlist-eyebrow').textContent = mood ? mood.name.toUpperCase() : 'PLAYLIST';
+  document.getElementById('playlist-title').textContent = playlist.title;
+  document.getElementById('playlist-desc').textContent = playlist.desc;
+
+  const listEl = document.getElementById('playlist-tracklist');
+  listEl.innerHTML = playlist.tracks.map((song, i) => `
+    <a class="tracklist-row" href="player.html?playlist=${encodeURIComponent(playlist.id)}&t=${i}">
+      <span class="tl-index">${String(i + 1).padStart(2, '0')}</span>
+      <span class="tl-play">${UI_ICONS.play}</span>
+      <span class="tl-title">${escapeHtml(song.title)}</span>
+      <span class="tl-duration">${fmtTime(song.duration)}</span>
+    </a>
+  `).join('');
 }
 
 // ───────────────────────── PLAYER ─────────────────────────
 
 let playerTracks = [];
 let playerIndex = -1;
+let playerMood = null;
+let playerPlaylist = null;
 let audioEl = null;
 let isShuffled = false;
 let isRepeating = false;
 
 async function initPlayerPage() {
   initNav();
-  const id = new URLSearchParams(location.search).get('id');
-  const track = await fetchTrackById(id);
+  const params = new URLSearchParams(location.search);
+  const playlistId = params.get('playlist');
 
-  if (!track) {
-    document.getElementById('player-loading').innerHTML = `<div class="empty-state">No encontramos ese audio.</div>`;
-    return;
+  if (playlistId) {
+    const playlist = await fetchPlaylistById(playlistId);
+    if (!playlist) {
+      document.getElementById('player-loading').innerHTML = `<div class="empty-state">No encontramos esa playlist.</div>`;
+      return;
+    }
+    playerPlaylist = playlist;
+    playerMood = moodById(playlist.moodId);
+    playerTracks = playlist.tracks;
+    const t = parseInt(params.get('t'), 10);
+    playerIndex = Number.isInteger(t) && t >= 0 && t < playerTracks.length ? t : 0;
+  } else {
+    const id = params.get('id');
+    const track = await fetchTrackById(id);
+    if (!track) {
+      document.getElementById('player-loading').innerHTML = `<div class="empty-state">No encontramos ese audio.</div>`;
+      return;
+    }
+    playerPlaylist = null;
+    playerMood = moodById(track.moodId);
+    playerTracks = await fetchTracksByMood(track.moodId);
+    playerIndex = playerTracks.findIndex((tr) => tr.id === track.id);
   }
-
-  playerTracks = await fetchTracksByMood(track.moodId);
-  playerIndex = playerTracks.findIndex((t) => t.id === track.id);
 
   document.getElementById('player-loading').style.display = 'none';
   document.getElementById('player-content').style.display = '';
@@ -372,16 +471,21 @@ async function initPlayerPage() {
     audioEl.currentTime = ratio * audioEl.duration;
   });
 
+  document.getElementById('player-visual').style.setProperty('--m-ink', playerMood ? playerMood.ink : '');
+
   loadTrack(playerIndex);
 }
 
 function loadTrack(index) {
-  const mood = moodById(playerTracks[index].moodId);
   const t = playerTracks[index];
 
-  document.getElementById('mood-badge').textContent = `MOOD ACTUAL: ${mood.name.toUpperCase()}`;
+  if (playerPlaylist) {
+    document.getElementById('mood-badge').textContent = `PLAYLIST · ${playerPlaylist.title.toUpperCase()}`;
+  } else {
+    document.getElementById('mood-badge').textContent = `MOOD ACTUAL: ${playerMood ? playerMood.name.toUpperCase() : ''}`;
+  }
   document.getElementById('player-title').textContent = t.title;
-  document.getElementById('player-desc').textContent = t.desc;
+  document.getElementById('player-desc').textContent = playerPlaylist ? playerPlaylist.desc : t.desc;
 
   audioEl.src = t.audioUrl;
   audioEl.currentTime = 0;
@@ -424,12 +528,15 @@ function togglePlay() {
 
 function setPlayingUI(playing) {
   const mainBtn = document.getElementById('play-main');
-  const core = document.getElementById('player-core');
+  const label = document.getElementById('player-label');
+  const vinyl = document.getElementById('player-vinyl');
+  const tonearm = document.getElementById('player-tonearm');
   mainBtn.innerHTML = playing ? UI_ICONS.pause : UI_ICONS.play;
   mainBtn.classList.toggle('playing', playing);
-  core.innerHTML = playing ? UI_ICONS.pause : UI_ICONS.play;
-  core.classList.toggle('playing', playing);
-  document.querySelectorAll('.ring').forEach((r) => r.classList.toggle('pulse', playing));
+  label.innerHTML = playing ? UI_ICONS.pause : UI_ICONS.play;
+  label.classList.toggle('playing', playing);
+  vinyl.classList.toggle('playing', playing);
+  tonearm.classList.toggle('playing', playing);
 }
 
 function stepTrack(dir) {
@@ -448,7 +555,13 @@ function stepTrack(dir) {
   }
   playerIndex = nextIndex;
   const params = new URLSearchParams(location.search);
-  params.set('id', playerTracks[playerIndex].id);
+  if (playerPlaylist) {
+    params.set('playlist', playerPlaylist.id);
+    params.set('t', playerIndex);
+    params.delete('id');
+  } else {
+    params.set('id', playerTracks[playerIndex].id);
+  }
   history.replaceState(null, '', `player.html?${params.toString()}`);
   loadTrack(playerIndex);
 }
@@ -510,6 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('home-container')) { initHome(); return; }
   if (document.getElementById('explorar-container')) { initExplorar(); return; }
   if (document.getElementById('mood-container')) { initMoodPage(); return; }
+  if (document.getElementById('playlist-container')) { initPlaylistPage(); return; }
   if (document.getElementById('player-container')) { initPlayerPage(); return; }
   if (document.getElementById('perfil-container')) { initPerfilPage(); return; }
   if (document.getElementById('config-container')) { initConfigPage(); return; }
