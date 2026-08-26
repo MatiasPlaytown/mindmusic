@@ -269,7 +269,6 @@ function initNav() {
     'index.html': 'nav-home', '': 'nav-home',
     'explorar.html': 'nav-explorar',
     'perfil.html': 'nav-perfil',
-    'config.html': 'nav-config',
   };
   const activeId = map[page];
   if (activeId) document.getElementById(activeId)?.classList.add('active');
@@ -1069,6 +1068,13 @@ function initPerfilPage() {
   document.getElementById('edit-name-btn')?.addEventListener('click', () => openEditModal());
   document.getElementById('modal-cancel')?.addEventListener('click', closeEditModal);
   document.getElementById('modal-save')?.addEventListener('click', saveEditModal);
+  document.getElementById('reset-data-btn')?.addEventListener('click', () => {
+    if (!confirm('¿Borrar todos los datos guardados en este dispositivo?')) return;
+    resetLocalData();
+    showToast('Datos borrados');
+    initNav();
+    renderPerfil();
+  });
 }
 
 function renderPerfil() {
@@ -1099,18 +1105,6 @@ function saveEditModal() {
   showToast('Perfil actualizado');
 }
 
-// ───────────────────────── CONFIG ─────────────────────────
-
-function initConfigPage() {
-  initNav();
-  document.getElementById('reset-data-btn')?.addEventListener('click', () => {
-    if (!confirm('¿Borrar todos los datos guardados en este dispositivo?')) return;
-    resetLocalData();
-    showToast('Datos borrados');
-    initNav();
-  });
-}
-
 // ───────────────────────── ROUTER ─────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1120,5 +1114,4 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('playlist-container')) { initPlaylistPage(); return; }
   if (document.getElementById('player-container')) { initPlayerPage(); return; }
   if (document.getElementById('perfil-container')) { initPerfilPage(); return; }
-  if (document.getElementById('config-container')) { initConfigPage(); return; }
 });

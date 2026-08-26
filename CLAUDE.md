@@ -21,13 +21,12 @@ PWA de música asociada a estados de ánimo, para un club de Playtown (hermana d
 | `mood.html` | Contenido asociado a un estado (`?id=XXX`): arriba la playlist del estado, abajo sus temas sueltos |
 | `playlist.html` | Tracklist de una playlist (`?id=XXX`) — canciones apiladas una debajo de otra, sin selector tipo grilla |
 | `player.html` | Reproductor de audio (`?id=XXX` para un ítem suelto, o `?playlist=XXX&t=N` para una canción dentro de una playlist) — controles reales sobre `<audio>`; entrando desde una playlist muestra abajo la cola (tema actual + los que siguen) |
-| `perfil.html` | Perfil editable (nombre) |
-| `config.html` | Configuración — borrar datos locales |
+| `perfil.html` | Perfil (nombre editable) + configuración (versión, club, borrar datos locales) en una sola pantalla |
 | `app.js` | TODO el JS (íconos, utils, mock-API, nav, init de cada página) |
 | `mock-data.js` | Datos mock con la forma que tendrá la futura respuesta de WordPress |
 | `audio/<mood>/` | Melodías finales del proyecto (`.m4a`), servidas desde el mismo origen |
 | `styles.css` | TODO el CSS (design system, nav, componentes) |
-| `favicon.svg` | Favicon / apple-touch-icon: la onda del logo de marca sobre teja oscura, linkeado desde las 7 páginas |
+| `favicon.svg` | Favicon / apple-touch-icon: la onda del logo de marca sobre teja oscura, linkeado desde las 6 páginas |
 
 ## Modelo de datos (`mock-data.js` → `MOCK_DB`)
 
@@ -49,7 +48,7 @@ Identidad basada en el objeto físico del disco/funda de vinilo (encaja con "pri
 - `mm_profile` — `{ name }`
 
 ## Navegación entre páginas
-- Nav bottom (mobile) / sidebar (desktop) en `index.html`, `explorar.html`, `perfil.html`, `config.html` y `player.html` (el player se escucha largo rato: tiene nav **y** "← Volver").
+- Nav bottom (mobile) / sidebar (desktop) en `index.html`, `explorar.html`, `perfil.html` y `player.html` (el player se escucha largo rato: tiene nav **y** "← Volver").
 - `mood.html` y `playlist.html` son pantallas de detalle (sin nav, con "← Volver" → `history.back()`), mismo criterio que `article.html`/`challenge.html` de Retofit.
 - Estado tocado → `mood.html?id=XXX`. Ahí hay dos caminos: la playlist (`.playlist-hero` → `playlist.html?id=XXX`) o un tema suelto de la tracklist de abajo (→ `player.html?playlist=XXX&t=N`, con la cola de esa playlist). Un track propio del mood (cuando existan) va a `player.html?id=XXX`.
 - El nav activo se resuelve en `initNav()` (app.js) según `location.pathname`.
@@ -58,6 +57,6 @@ Identidad basada en el objeto físico del disco/funda de vinilo (encaja con "pri
 - No usar frameworks, no agregar build steps.
 - CSS custom properties en `:root` (`--bg`, `--violet`, `--cyan`, `--card`, etc.), dark UI, radios grandes (`--rl: 24px`).
 - Íconos de estado en `MOOD_ICONS` (app.js, SVG inline) — no tocar sin necesidad.
-- El `app.js` detecta en qué página está por la presencia de IDs únicos en el DOM (`home-container`, `explorar-container`, `mood-container`, `player-container`, `perfil-container`, `config-container`).
+- El `app.js` detecta en qué página está por la presencia de IDs únicos en el DOM (`home-container`, `explorar-container`, `mood-container`, `player-container`, `perfil-container`).
 - Skeletons/spinner mientras se "fetchea" el mock. Sin fallback a datos estáticos embebidos en el HTML.
 - Buscadores (home y explorar) filtran en el cliente sobre los datos ya cargados en memoria — no hay backend de búsqueda.

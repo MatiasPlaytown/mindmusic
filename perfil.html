@@ -17,11 +17,6 @@
 <div id="perfil-container" class="page">
   <header class="app-header">
     <div class="brand"><svg class="brand-icon" viewBox="0 0 120 64" fill="none" aria-hidden="true"><defs><linearGradient id="mmWaveHeader" x1="0" y1="0" x2="120" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#8FD9E8"/><stop offset="50%" stop-color="#6E8EE8"/><stop offset="100%" stop-color="#B3A6EE"/></linearGradient></defs><path d="M4,46 C12,46 12,26 20,26 C27,26 27,46 34,46 C41,46 41,6 48,6 C54,6 54,58 60,58 C66,58 66,6 72,6 C79,6 79,46 86,46 C93,46 93,26 100,26 C108,26 108,46 116,46" stroke="url(#mmWaveHeader)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="brand-text">MINDMUSIC<small>by Playtown</small></span></div>
-    <div class="header-actions">
-      <a class="icon-btn" href="config.html" aria-label="Configuración">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-      </a>
-    </div>
   </header>
 
   <div class="profile-head">
@@ -39,6 +34,26 @@
       <button class="edit-link" id="edit-name-btn">Editar</button>
     </div>
   </div>
+
+  <h1 class="page-title">Configuración</h1>
+  <p class="page-sub">Preferencias de la app y datos guardados en este dispositivo.</p>
+
+  <div class="form-block">
+    <div class="form-row">
+      <div>
+        <div class="label">Versión</div>
+        <div class="value">MindMusic 1.0</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <div class="label">Club</div>
+        <div class="value">Playtown</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="danger-btn" id="reset-data-btn">Borrar datos locales</button>
 </div>
 
 <div class="modal-backdrop" id="edit-modal">
@@ -66,11 +81,6 @@
     <a class="nav-item" id="nav-perfil" href="perfil.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg>
       <span>Perfil</span>
-    </a>
-    <div class="nav-sep"></div>
-    <a class="nav-item" id="nav-config" href="config.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-      <span>Config</span>
     </a>
   </div>
   <div class="nav-bottom">
