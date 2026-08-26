@@ -21,6 +21,7 @@ const UI_ICONS = {
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  playing: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="9" width="3" height="6" rx="1.5"/><rect x="10.5" y="5" width="3" height="14" rx="1.5"/><rect x="17" y="11" width="3" height="2" rx="1"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
   shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5L15 18h3.5M3 18h3.5l2-2.7M16 6h2.5M18.5 6 16 3.5M18.5 6 16 8.5M18.5 18 16 15.5M18.5 18 16 20.5"/></svg>',
   prev: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg>',
@@ -61,6 +62,22 @@ function moodById(id) {
   return MOCK_DB.moods.find((m) => m.id === id);
 }
 
+function photoUrl(base, w, q = 75) {
+  return base ? `${base}?auto=format&fit=crop&w=${w}&q=${q}` : '';
+}
+
+// Ambienta la pantalla de detalle (mood/playlist/player) con la foto real
+// del estado: reemplaza la foto de marca genérica del body por la del mood,
+// manteniendo el mismo scrim para legibilidad y un tinte radial con su ink.
+function applyMoodAmbient(mood) {
+  if (!mood?.photo) return;
+  document.body.style.setProperty('--ambient',
+    `linear-gradient(180deg, rgba(15,12,8,.46) 0%, rgba(15,12,8,.4) 22%, rgba(15,12,8,.62) 45%, rgba(15,12,8,.94) 80%, var(--ink) 100%), ` +
+    `radial-gradient(ellipse 900px 700px at 25% 0%, color-mix(in srgb, ${mood.ink} 30%, transparent), transparent 65%), ` +
+    `url('${photoUrl(mood.photo, 2200)}')`
+  );
+}
+
 let toastTimer;
 function showToast(msg) {
   let el = document.querySelector('.toast');
@@ -75,21 +92,95 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
+// Semilla determinística a partir del mood + el nombre del tema: la misma
+// canción dibuja siempre la misma portada, y dos canciones del mismo estado
+// nunca dibujan la misma.
+function hashString(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+// Iniciales del tema (hasta 2 palabras): el arte de portada también tiene que
+// leerse como "esta canción", no sólo como "este estado de ánimo".
+function songInitials(title) {
+  return String(title || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase() || '♪';
+}
+
+// Variables CSS del arte de un tema suelto: la foto del mood (recortada en un
+// punto distinto para cada canción) + capas de color con su tinta, giradas
+// según el nombre. Las consume `.songart` / `.cover--art` en styles.css.
+function songArtVars(mood, title, photoBase) {
+  const h = hashString((mood ? mood.id : '') + '·' + (title || ''));
+  const base = photoBase || (mood ? mood.photo : '');
+  const photo = base ? `url('${photoUrl(base, 700)}')` : 'none';
+  return [
+    `--m-ink:${mood ? mood.ink : ''}`,
+    `--sa-photo:${photo}`,
+    `--sa-pos:${18 + (h % 64)}% ${18 + ((h >> 7) % 64)}%`,
+    `--sa-angle:${h % 360}deg`,
+    `--sa-x1:${16 + ((h >> 4) % 62)}%`,
+    `--sa-y1:${14 + ((h >> 9) % 60)}%`,
+    `--sa-x2:${18 + ((h >> 14) % 62)}%`,
+    `--sa-y2:${24 + ((h >> 19) % 58)}%`,
+  ].join(';');
+}
+
+// Cuadrado de arte de un tema: se usa en las filas de tracklist, en la cola
+// del player y (en grande) arriba del título del reproductor.
+function songArtHTML(mood, title, modifier = '', photoBase) {
+  const icon = mood ? (MOOD_ICONS[mood.icon] || '') : '';
+  return `
+    <span class="songart${modifier ? ' ' + modifier : ''}" style="${songArtVars(mood, title, photoBase)}" aria-hidden="true">
+      <span class="songart-glyph">${icon}</span>
+      <span class="songart-initials">${escapeHtml(songInitials(title))}</span>
+    </span>
+  `;
+}
+
 // Portada tipo disco/funda: cada ítem de audio se dibuja como un vinilo
 // dentro de una funda con el color del mood. Las playlists se ven como una
-// pila de fundas (varios discos adentro), no como un ítem suelto más.
-function coverHTML(kind, mood, trackCount) {
-  const stackClass = kind === 'playlist' ? ' cover--stack' : '';
+// pila de fundas (varios discos adentro) sobre la foto del estado y con la
+// palabra PLAYLIST bien visible; los temas sueltos, sobre su propio arte.
+function coverHTML(kind, mood, trackCount, title, photo) {
+  const isPlaylist = kind === 'playlist';
   const icon = mood ? (MOOD_ICONS[mood.icon] || '') : '';
   const moodBadge = mood ? `<span class="cover-mood-badge">${escapeHtml(mood.name)}</span>` : '';
-  const countBadge = kind === 'playlist' && trackCount != null ? `<span class="cover-count">${trackCount} temas</span>` : '';
+  // La playlist se ve como la foto del estado dentro de una pila de fundas:
+  // sin disco adelante, que tapaba la imagen.
+  const disc = isPlaylist ? '' : `<div class="disc"><div class="disc-icon">${icon}</div></div>`;
+  const style = isPlaylist ? playlistCoverVars(mood, photo) : songArtVars(mood, title, photo);
+  // La playlist grita PLAYLIST; el tema suelto firma la funda con sus
+  // iniciales, para que la portada sea de esa canción y no del estado entero.
+  const foot = isPlaylist
+    ? `${trackCount != null ? `<span class="cover-count">${trackCount} temas</span>` : ''}
+       <div class="cover-foot"><span class="cover-kind">Playlist</span></div>`
+    : `<span class="cover-initials">${escapeHtml(songInitials(title))}</span>`;
+
   return `
-    <div class="cover${stackClass}" style="--m-ink:${mood ? mood.ink : ''}">
+    <div class="cover ${isPlaylist ? 'cover--stack' : 'cover--art'}" style="${style}">
+      <div class="cover-face">${disc}${foot}</div>
       ${moodBadge}
-      <div class="disc"><div class="disc-icon">${icon}</div></div>
-      ${countBadge}
     </div>
   `;
+}
+
+// Foto de portada de una playlist: la suya propia (`playlist.photo`), del
+// mismo clima que la del estado pero nunca la misma imagen. Si algún día
+// falta, cae en la del mood.
+function playlistCoverVars(mood, photoBase) {
+  const base = photoBase || (mood ? mood.photo : '');
+  const photo = base ? `url('${photoUrl(base, 700)}')` : 'none';
+  return `--m-ink:${mood ? mood.ink : ''};--m-photo:${photo}`;
 }
 
 function buildFeed(tracks, playlists) {
@@ -223,7 +314,7 @@ function renderMoodSkeletons() {
 function renderMoodGrid(moods, el) {
   if (!el) return;
   el.innerHTML = moods.map((m) => `
-    <a class="mood-card" href="mood.html?id=${encodeURIComponent(m.id)}" style="--m-ink:${m.ink}">
+    <a class="mood-card" href="mood.html?id=${encodeURIComponent(m.id)}" style="--m-ink:${m.ink};--m-photo:url('${photoUrl(m.photo, 900)}')">
       <div class="mood-icon">${MOOD_ICONS[m.icon] || ''}</div>
       <h3>${escapeHtml(m.name)}</h3>
       <p>${escapeHtml(m.subtitle)}</p>
@@ -235,6 +326,15 @@ function renderMoodGrid(moods, el) {
 function renderContentTabs() {
   const el = document.getElementById('home-tabs');
   if (!el) return;
+  // Con una sola categoría de contenido, el filtro no filtra nada: se oculta
+  // en vez de mostrar un "Todos / Playlists" redundante. Vuelve solo cuando
+  // haya más de un contentType.
+  if (MOCK_DB.contentTypes.length < 2) {
+    el.style.display = 'none';
+    homeActiveType = 'todos';
+    return;
+  }
+  el.style.display = '';
   const types = [{ id: 'todos', name: 'Todos' }, ...MOCK_DB.contentTypes];
   el.innerHTML = types.map((t) => `
     <button class="tab ${t.id === homeActiveType ? 'active' : ''}" data-type="${t.id}">${escapeHtml(t.name)}</button>
@@ -282,7 +382,7 @@ function renderTrackGrid(items, containerId) {
       : `${escapeHtml(contentTypeName(item.contentType))} · ${fmtTime(item.duration)}`;
     return `
       <a class="track-card" href="${href}">
-        ${coverHTML(isPlaylist ? 'playlist' : 'track', mood, isPlaylist ? item.tracks.length : null)}
+        ${coverHTML(isPlaylist ? 'playlist' : 'track', mood, isPlaylist ? item.tracks.length : null, item.title, item.photo)}
         <div class="track-body">
           <h4>${escapeHtml(item.title)}</h4>
           <span>${meta}</span>
@@ -336,11 +436,11 @@ function renderCatGrid(moods) {
     return;
   }
   el.innerHTML = moods.map((m) => `
-    <a class="cat-card" href="mood.html?id=${encodeURIComponent(m.id)}" style="--m-ink:${m.ink}">
-      <div class="cat-disc"><div class="disc-icon">${MOOD_ICONS[m.icon] || ''}</div></div>
+    <a class="cat-card" href="mood.html?id=${encodeURIComponent(m.id)}" style="--m-ink:${m.ink};--m-photo:url('${photoUrl(m.photo, 1200)}')">
+      <div class="cat-disc">${MOOD_ICONS[m.icon] || ''}</div>
       <div class="overlay">
-        <p class="eyebrow">${escapeHtml(m.subtitle.toUpperCase())}</p>
         <h3>${escapeHtml(m.name)}</h3>
+        <p>${escapeHtml(m.subtitle)}</p>
       </div>
     </a>
   `).join('');
@@ -358,6 +458,7 @@ async function initMoodPage() {
     return;
   }
 
+  applyMoodAmbient(mood);
   document.getElementById('mood-title').textContent = mood.name;
   document.getElementById('mood-sub').textContent = mood.subtitle;
   document.getElementById('mood-icon').innerHTML = MOOD_ICONS[mood.icon] || '';
@@ -366,7 +467,78 @@ async function initMoodPage() {
   const [tracks, playlists] = await Promise.all([fetchTracksByMood(mood.id), fetchPlaylistsByMood(mood.id)]);
   document.getElementById('mood-loading').style.display = 'none';
   document.getElementById('mood-content').style.display = '';
-  renderTrackGrid(buildFeed(tracks, playlists), 'mood-tracks');
+
+  // Dos caminos, uno arriba del otro: primero la playlist entera (para
+  // dejarse llevar), abajo los temas sueltos (para ir a uno puntual).
+  toggleSection('mood-playlists-section', playlists.length);
+  renderMoodPlaylists(playlists);
+
+  const songs = moodSongList(tracks, playlists);
+  toggleSection('mood-songs-section', songs.length);
+  if (songs.length) renderMoodSongs(songs, mood);
+}
+
+function toggleSection(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = show ? '' : 'none';
+}
+
+// Los temas sueltos de un estado son los ítems de audio propios más las
+// canciones de sus playlists: cada una se puede escuchar sola, pero al
+// tocarla el player arranca con la cola de su playlist.
+function moodSongList(tracks, playlists) {
+  const own = tracks.map((t) => ({
+    title: t.title,
+    duration: t.duration,
+    href: `player.html?id=${encodeURIComponent(t.id)}`,
+    photo: t.photo,
+  }));
+  const fromPlaylists = playlists.flatMap((p) =>
+    p.tracks.map((song, i) => ({
+      title: song.title,
+      duration: song.duration,
+      href: `player.html?playlist=${encodeURIComponent(p.id)}&t=${i}`,
+      photo: p.photo,
+    }))
+  );
+  return [...own, ...fromPlaylists];
+}
+
+// La playlist del estado se muestra como una pieza ancha (funda + datos al
+// costado), no como una tarjeta más de grilla: es el camino principal.
+function renderMoodPlaylists(playlists) {
+  const el = document.getElementById('mood-playlists');
+  if (!el) return;
+  el.innerHTML = playlists.map((p) => {
+    const mood = moodById(p.moodId);
+    return `
+      <a class="playlist-hero" href="playlist.html?id=${encodeURIComponent(p.id)}" style="${playlistCoverVars(mood, p.photo)}">
+        <div class="cover cover--stack" style="${playlistCoverVars(mood, p.photo)}">
+          <div class="cover-face"></div>
+        </div>
+        <div class="meta">
+          <span class="ph-kind">Playlist</span>
+          <h3>${escapeHtml(p.title)}</h3>
+          <p>${escapeHtml(p.desc)}</p>
+          <span class="ph-count">${p.tracks.length} canciones</span>
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+function renderMoodSongs(songs, mood) {
+  const el = document.getElementById('mood-songs');
+  if (!el) return;
+  el.innerHTML = songs.map((song) => `
+    <a class="track-card" href="${song.href}">
+      ${coverHTML('track', mood, null, song.title, song.photo)}
+      <div class="track-body">
+        <h4>${escapeHtml(song.title)}</h4>
+        <span>Tema &middot; ${fmtTime(song.duration)}</span>
+      </div>
+    </a>
+  `).join('');
 }
 
 // ───────────────────────── PLAYLIST ─────────────────────────
@@ -384,15 +556,22 @@ async function initPlaylistPage() {
   }
 
   const mood = moodById(playlist.moodId);
+  applyMoodAmbient(mood);
 
   document.getElementById('playlist-loading').style.display = 'none';
   document.getElementById('playlist-content').style.display = '';
 
   const coverEl = document.getElementById('playlist-cover');
-  coverEl.innerHTML = `<div class="disc"><div class="disc-icon">${mood ? (MOOD_ICONS[mood.icon] || '') : ''}</div></div>`;
-  coverEl.style.setProperty('--m-ink', mood ? mood.ink : '');
+  const moodBadge = mood ? `<span class="cover-mood-badge">${escapeHtml(mood.name)}</span>` : '';
+  coverEl.innerHTML = `
+    <div class="cover-face">
+      <span class="cover-count">${playlist.tracks.length} temas</span>
+      <div class="cover-foot"><span class="cover-kind">Playlist</span></div>
+    </div>
+    ${moodBadge}`;
+  coverEl.setAttribute('style', playlistCoverVars(mood, playlist.photo));
+  document.querySelector('.playlist-head').style.setProperty('--m-ink', mood ? mood.ink : '');
 
-  document.getElementById('playlist-eyebrow').textContent = mood ? mood.name.toUpperCase() : 'PLAYLIST';
   document.getElementById('playlist-title').textContent = playlist.title;
   document.getElementById('playlist-desc').textContent = playlist.desc;
 
@@ -400,6 +579,7 @@ async function initPlaylistPage() {
   listEl.innerHTML = playlist.tracks.map((song, i) => `
     <a class="tracklist-row" href="player.html?playlist=${encodeURIComponent(playlist.id)}&t=${i}">
       <span class="tl-index">${String(i + 1).padStart(2, '0')}</span>
+      ${songArtHTML(mood, song.title, '', playlist.photo)}
       <span class="tl-play">${UI_ICONS.play}</span>
       <span class="tl-title">${escapeHtml(song.title)}</span>
       <span class="tl-duration">${fmtTime(song.duration)}</span>
@@ -446,10 +626,14 @@ async function initPlayerPage() {
     playerIndex = playerTracks.findIndex((tr) => tr.id === track.id);
   }
 
+  applyMoodAmbient(playerMood);
   document.getElementById('player-loading').style.display = 'none';
   document.getElementById('player-content').style.display = '';
 
   audioEl = document.getElementById('player-audio');
+  // Debe fijarse antes del primer src: sin esto el analizador de ondas nunca
+  // puede leer un archivo servido desde otro origen (ver MM_AUDIO_CORS).
+  if (MM_AUDIO_CORS) audioEl.crossOrigin = 'anonymous';
 
   document.getElementById('shuffle-btn').addEventListener('click', () => {
     isShuffled = !isShuffled;
@@ -471,7 +655,26 @@ async function initPlayerPage() {
     audioEl.currentTime = ratio * audioEl.duration;
   });
 
-  document.getElementById('player-visual').style.setProperty('--m-ink', playerMood ? playerMood.ink : '');
+  const visual = document.getElementById('player-visual');
+  visual.style.setProperty('--m-ink', playerMood ? playerMood.ink : '');
+  waveViz.init(visual, playerMood ? playerMood.ink : null);
+
+  // La cola sólo existe cuando se entró desde una playlist: ahí el usuario ya
+  // eligió un conjunto ordenado y quiere ver qué viene después.
+  if (playerPlaylist) {
+    const queueEl = document.getElementById('player-queue');
+    queueEl.style.display = '';
+    queueEl.querySelector('.section-head h2').textContent = playerPlaylist.title;
+    document.getElementById('queue-open').href = `playlist.html?id=${encodeURIComponent(playerPlaylist.id)}`;
+    document.getElementById('queue-list').addEventListener('click', (e) => {
+      const row = e.target.closest('.tracklist-row');
+      if (!row) return;
+      const index = parseInt(row.dataset.index, 10);
+      // Tocar el tema que ya suena no recarga nada: hace play/pausa.
+      if (index === playerIndex) togglePlay();
+      else jumpToTrack(index);
+    });
+  }
 
   loadTrack(playerIndex);
 }
@@ -484,6 +687,7 @@ function loadTrack(index) {
   } else {
     document.getElementById('mood-badge').textContent = `MOOD ACTUAL: ${playerMood ? playerMood.name.toUpperCase() : ''}`;
   }
+  document.getElementById('player-art').innerHTML = songArtHTML(playerMood, t.title, 'songart--lg', playerPlaylist && playerPlaylist.photo);
   document.getElementById('player-title').textContent = t.title;
   document.getElementById('player-desc').textContent = playerPlaylist ? playerPlaylist.desc : t.desc;
 
@@ -514,6 +718,39 @@ function loadTrack(index) {
   };
 
   audioEl.play().then(() => setPlayingUI(true)).catch(() => setPlayingUI(false));
+
+  renderQueue();
+}
+
+// La cola se dibuja rotada: primero el tema que suena y después los que
+// siguen (dando la vuelta al final, igual que stepTrack), para que lo de
+// abajo del player siempre se lea como "ahora y lo que viene".
+function renderQueue() {
+  if (!playerPlaylist) return;
+  const listEl = document.getElementById('queue-list');
+  const rotated = playerTracks.map((song, i) => ({ song, i }));
+  rotated.push(...rotated.splice(0, playerIndex));
+
+  listEl.innerHTML = rotated.map(({ song, i }, pos) => `
+    <button class="tracklist-row${pos === 0 ? ' is-current' : ''}" type="button" data-index="${i}">
+      <span class="tl-index">${pos === 0 ? UI_ICONS.playing : String(i + 1).padStart(2, '0')}</span>
+      ${songArtHTML(playerMood, song.title, '', playerPlaylist && playerPlaylist.photo)}
+      <span class="tl-play">${pos === 0 ? UI_ICONS.pause : UI_ICONS.play}</span>
+      <span class="tl-title">${escapeHtml(song.title)}</span>
+      <span class="tl-duration">${fmtTime(song.duration)}</span>
+    </button>
+  `).join('');
+}
+
+function jumpToTrack(index) {
+  if (!Number.isInteger(index) || index === playerIndex) return;
+  playerIndex = index;
+  const params = new URLSearchParams(location.search);
+  params.set('playlist', playerPlaylist.id);
+  params.set('t', playerIndex);
+  params.delete('id');
+  history.replaceState(null, '', `player.html?${params.toString()}`);
+  loadTrack(playerIndex);
 }
 
 function togglePlay() {
@@ -528,15 +765,15 @@ function togglePlay() {
 
 function setPlayingUI(playing) {
   const mainBtn = document.getElementById('play-main');
-  const label = document.getElementById('player-label');
-  const vinyl = document.getElementById('player-vinyl');
-  const tonearm = document.getElementById('player-tonearm');
   mainBtn.innerHTML = playing ? UI_ICONS.pause : UI_ICONS.play;
   mainBtn.classList.toggle('playing', playing);
-  label.innerHTML = playing ? UI_ICONS.pause : UI_ICONS.play;
-  label.classList.toggle('playing', playing);
-  vinyl.classList.toggle('playing', playing);
-  tonearm.classList.toggle('playing', playing);
+  const currentRow = document.querySelector('#queue-list .tracklist-row.is-current');
+  if (currentRow) {
+    currentRow.classList.toggle('is-paused', !playing);
+    currentRow.querySelector('.tl-play').innerHTML = playing ? UI_ICONS.pause : UI_ICONS.play;
+  }
+  if (playing) waveViz.connect(audioEl);
+  waveViz.setPlaying(playing);
 }
 
 function stepTrack(dir) {
@@ -565,6 +802,263 @@ function stepTrack(dir) {
   history.replaceState(null, '', `player.html?${params.toString()}`);
   loadTrack(playerIndex);
 }
+
+// ───────────────────────── ONDAS (visualizador) ─────────────────────────
+// Reemplaza al vinilo en la parte de arriba del player: una banda de ondas
+// que respira con la canción. Dos modos:
+//
+//  · REAL — AnalyserNode de Web Audio leyendo el <audio>. Sólo se activa si
+//    la pista es analizable: mismo origen, o servida con CORS y MM_AUDIO_CORS
+//    en true. Conectar un MediaElementSource a un audio cross-origin SIN CORS
+//    devuelve silencio (spec de Web Audio) y mataría la reproducción, así que
+//    nunca se intenta a ciegas.
+//  · OLEAJE — fallback para pistas remotas sin CORS: las ondas se mueven con
+//    un oleaje sintético lento, atado a play/pausa. Misma sensación de calma,
+//    sin seguir el espectro real.
+//
+// Hoy las melodías se sirven desde `audio/` (mismo origen) y el modo REAL se
+// activa solo. Si algún día las pistas pasan a otro dominio con CORS
+// habilitado, poner MM_AUDIO_CORS = true y no cambia nada más en la página.
+const MM_AUDIO_CORS = false;
+const WAVE_BANDS = 56;
+
+function audioIsAnalysable(url) {
+  if (!url) return false;
+  try {
+    return new URL(url, location.href).origin === location.origin || MM_AUDIO_CORS;
+  } catch (e) {
+    return false;
+  }
+}
+
+function hexToRgba(hex, alpha) {
+  const h = String(hex || '').replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  if (!/^[0-9a-f]{6}$/i.test(full) || Number.isNaN(n)) return `rgba(212,175,110,${alpha})`;
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
+const waveViz = {
+  visual: null, canvas: null, ctx: null,
+  w: 0, h: 0, dpr: 1,
+  raf: 0, last: 0, time: 0,
+  levels: new Array(WAVE_BANDS).fill(0.35),
+  energy: 0.2,
+  playing: false,
+  reduced: false,
+  ink: '#D4AF6E',
+  audioCtx: null, srcNode: null, analyser: null, freqData: null,
+
+  init(visual, ink) {
+    this.visual = visual;
+    this.canvas = document.getElementById('wave-canvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    if (ink) this.ink = ink;
+    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.stop();
+      else this.start();
+    });
+    this.start();
+  },
+
+  resize() {
+    if (!this.canvas) return;
+    const rect = this.visual.getBoundingClientRect();
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.w = Math.max(1, rect.width);
+    this.h = Math.max(1, rect.height);
+    this.canvas.width = Math.round(this.w * this.dpr);
+    this.canvas.height = Math.round(this.h * this.dpr);
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.reduced) this.draw();
+  },
+
+  // Con motion reducido se dibuja una sola vez: ondas quietas, sin loop.
+  start() {
+    if (!this.ctx || this.raf || this.reduced) return;
+    this.last = performance.now();
+    const tick = (now) => {
+      const dt = Math.min(0.05, (now - this.last) / 1000);
+      this.last = now;
+      this.time += dt;
+      this.sample(dt);
+      this.draw();
+      this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
+  },
+
+  stop() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = 0;
+  },
+
+  setPlaying(playing) {
+    this.playing = playing;
+    if (this.audioCtx && playing && this.audioCtx.state === 'suspended') this.audioCtx.resume();
+    if (this.reduced) {
+      // Sin animación: se redibuja una vez, más alto al reproducir.
+      this.energy = playing ? 0.7 : 0.22;
+      this.draw();
+      return;
+    }
+    this.start();
+  },
+
+  connect(audio) {
+    if (!audio || this.srcNode || !audioIsAnalysable(audio.currentSrc || audio.src)) return;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      this.audioCtx = new Ctx();
+      this.srcNode = this.audioCtx.createMediaElementSource(audio);
+      this.analyser = this.audioCtx.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.analyser.smoothingTimeConstant = 0.85;
+      this.srcNode.connect(this.analyser);
+      this.analyser.connect(this.audioCtx.destination);
+      this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
+    } catch (e) {
+      this.analyser = null;
+      this.freqData = null;
+    }
+  },
+
+  // Actualiza el perfil de la onda (una altura por banda) y la energía global.
+  sample(dt) {
+    if (this.analyser) {
+      this.analyser.getByteFrequencyData(this.freqData);
+      const bins = this.freqData.length;
+      for (let i = 0; i < WAVE_BANDS; i++) {
+        // Reparto logarítmico: más resolución en graves/medios, que es donde
+        // vive el cuerpo de la música.
+        const from = Math.floor(Math.pow(i / WAVE_BANDS, 1.7) * bins);
+        const to = Math.max(from + 1, Math.floor(Math.pow((i + 1) / WAVE_BANDS, 1.7) * bins));
+        let sum = 0;
+        for (let b = from; b < to && b < bins; b++) sum += this.freqData[b];
+        const v = sum / (to - from) / 255;
+        this.levels[i] += (v - this.levels[i]) * Math.min(1, dt * 10);
+      }
+    } else {
+      // Oleaje: suma de senos lentos con períodos no múltiplos entre sí, para
+      // que nunca se note el bucle.
+      for (let i = 0; i < WAVE_BANDS; i++) {
+        const p = i / WAVE_BANDS;
+        const v = 0.48
+          + 0.24 * Math.sin(this.time * 0.5 + p * 5.1)
+          + 0.15 * Math.sin(this.time * 0.29 - p * 8.9)
+          + 0.09 * Math.sin(this.time * 0.77 + p * 2.4);
+        this.levels[i] += (Math.max(0, Math.min(1, v)) - this.levels[i]) * Math.min(1, dt * 4);
+      }
+    }
+
+    // En pausa las ondas no se congelan: bajan a un latido mínimo.
+    const target = this.playing ? 1 : 0.22;
+    this.energy += (target - this.energy) * Math.min(1, dt * 1.6);
+  },
+
+  // Altura interpolada (suave, coseno) en una posición 0..1 del ancho.
+  levelAt(p) {
+    const f = Math.max(0, Math.min(0.9999, p)) * (WAVE_BANDS - 1);
+    const i = Math.floor(f);
+    const k = (1 - Math.cos((f - i) * Math.PI)) / 2;
+    return this.levels[i] * (1 - k) + this.levels[i + 1] * k;
+  },
+
+  draw() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    ctx.clearRect(0, 0, this.w, this.h);
+
+    // De atrás hacia adelante: las de atrás, más lentas, largas y tenues.
+    const layers = [
+      { base: 0.44, amp: 0.44, freq: 3.1, speed: 0.30, phase: 0.0, alpha: 0.10 },
+      { base: 0.53, amp: 0.36, freq: 4.9, speed: -0.44, phase: 1.7, alpha: 0.12 },
+      { base: 0.62, amp: 0.28, freq: 7.3, speed: 0.60, phase: 3.1, alpha: 0.14 },
+      { base: 0.71, amp: 0.21, freq: 10.2, speed: -0.85, phase: 4.6, alpha: 0.16 },
+    ];
+    layers.forEach((l) => this.drawLayer(l));
+    this.drawCrest();
+  },
+
+  drawLayer(l) {
+    const ctx = this.ctx;
+    const baseY = this.h * l.base;
+    const amp = this.h * l.amp;
+
+    ctx.beginPath();
+    ctx.moveTo(0, this.h);
+    for (let x = 0; x <= this.w; x += 5) {
+      ctx.lineTo(x, this.waveY(x, baseY, amp, l.freq, l.speed, l.phase));
+    }
+    ctx.lineTo(this.w, this.h);
+    ctx.closePath();
+
+    const grad = ctx.createLinearGradient(0, baseY - amp, 0, this.h);
+    grad.addColorStop(0, hexToRgba(this.ink, l.alpha * 1.6));
+    grad.addColorStop(0.5, hexToRgba(this.ink, l.alpha * 0.5));
+    grad.addColorStop(1, hexToRgba(this.ink, 0));
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // El borde de cada capa se marca apenas: sin esto las capas se funden en
+    // una mancha sólida y se pierde la sensación de agua superpuesta.
+    ctx.beginPath();
+    for (let x = 0; x <= this.w; x += 5) {
+      const y = this.waveY(x, baseY, amp, l.freq, l.speed, l.phase);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = hexToRgba(this.ink, 0.16 + 0.2 * this.energy);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  },
+
+  // La línea de arriba: la única con brillo, para que la banda tenga un filo
+  // nítido en vez de ser una mancha de color.
+  drawCrest() {
+    const ctx = this.ctx;
+    const baseY = this.h * 0.48;
+    const amp = this.h * 0.38;
+
+    ctx.beginPath();
+    for (let x = 0; x <= this.w; x += 4) {
+      const y = this.waveY(x, baseY, amp, 3.4, 0.24, 0.6);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    const grad = ctx.createLinearGradient(0, 0, this.w, 0);
+    grad.addColorStop(0, hexToRgba(this.ink, 0.25));
+    grad.addColorStop(0.5, hexToRgba('#F5EDE0', 0.55 + 0.35 * this.energy));
+    grad.addColorStop(1, hexToRgba(this.ink, 0.25));
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = hexToRgba(this.ink, 0.75);
+    ctx.shadowBlur = 16 + 12 * this.energy;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  },
+
+  // Portadora continua (dos senos) modulada por el perfil de la canción, y
+  // apagada en los bordes para que la onda muera contra los costados.
+  waveY(x, baseY, amp, freq, speed, phase) {
+    const p = x / this.w;
+    const carrier =
+      Math.sin(p * freq + this.time * speed + phase) * 0.62 +
+      Math.sin(p * freq * 0.53 - this.time * speed * 0.7 + phase) * 0.38;
+    const edge = Math.sin(Math.PI * Math.max(0, Math.min(1, p)));
+    return baseY - carrier * amp * (0.35 + 0.8 * this.levelAt(p)) * this.energy * edge;
+  },
+};
 
 // ───────────────────────── PERFIL ─────────────────────────
 
