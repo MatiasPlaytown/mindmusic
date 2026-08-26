@@ -43,11 +43,11 @@ const MOCK_DB = {
       title: 'Silencio Interior',
       desc: 'Una selección de pistas suaves para acompañar momentos de introspección.',
       tracks: [
-        { title: 'Infinite Stillness', duration: 166, audioUrl: 'audio/foco/infinite-stillness.m4a' },
-        { title: 'Warm Cycle',         duration: 159, audioUrl: 'audio/foco/warm-cycle.m4a' },
-        { title: 'Deep Stillness',     duration: 178, audioUrl: 'audio/foco/deep-stillness.m4a' },
-        { title: 'Still Life',         duration: 179, audioUrl: 'audio/foco/still-life.m4a' },
-        { title: 'Warm Currents',      duration: 171, audioUrl: 'audio/foco/warm-currents.m4a' },
+        { title: 'Infinite Stillness', duration: 166, audioUrl: 'audio/foco/infinite-stillness.m4a', photo: 'https://images.unsplash.com/photo-1655815226187-113f3b3d7510' }, // dunas de desierto en calma
+        { title: 'Warm Cycle',         duration: 159, audioUrl: 'audio/foco/warm-cycle.m4a',         photo: 'https://images.unsplash.com/photo-1561921348-89b3db247320' }, // taza humeante, luz cálida
+        { title: 'Deep Stillness',     duration: 178, audioUrl: 'audio/foco/deep-stillness.m4a',     photo: 'https://images.unsplash.com/photo-1473893604213-3df9c15611c0' }, // cuarto vacío con luz de ventana
+        { title: 'Still Life',         duration: 179, audioUrl: 'audio/foco/still-life.m4a',         photo: 'https://images.unsplash.com/photo-1694636775862-c35027446a0f' }, // bodegón de mesa
+        { title: 'Warm Currents',      duration: 171, audioUrl: 'audio/foco/warm-currents.m4a',      photo: 'https://images.unsplash.com/photo-1613578519724-22fdb5d06388' }, // rayos de sol entre cortinas
       ],
     },
     {
@@ -56,11 +56,11 @@ const MOCK_DB = {
       title: 'Activación Total',
       desc: 'Ritmos que suben la energía antes de entrenar o encarar el día.',
       tracks: [
-        { title: 'Steady Stride',    duration: 173, audioUrl: 'audio/superacion/steady-stride.m4a' },
-        { title: 'Grand Ascent',     duration: 173, audioUrl: 'audio/superacion/grand-ascent.m4a' },
-        { title: 'The Ascent II',    duration: 175, audioUrl: 'audio/superacion/the-ascent-ii.m4a' },
-        { title: 'The Final Ascent', duration: 172, audioUrl: 'audio/superacion/the-final-ascent.m4a' },
-        { title: 'The Ascent',       duration: 172, audioUrl: 'audio/superacion/the-ascent.m4a' },
+        { title: 'Steady Stride',    duration: 173, audioUrl: 'audio/superacion/steady-stride.m4a',    photo: 'https://images.unsplash.com/photo-1586022045497-31fcf76fa6cc' }, // caminata firme en sendero
+        { title: 'Grand Ascent',     duration: 173, audioUrl: 'audio/superacion/grand-ascent.m4a',     photo: 'https://images.unsplash.com/photo-1775334006478-865fa1b777de' }, // cordillera vasta desde el aire
+        { title: 'The Ascent II',    duration: 175, audioUrl: 'audio/superacion/the-ascent-ii.m4a',    photo: 'https://images.unsplash.com/photo-1507553156678-fd07e00a106b' }, // filo de montaña al amanecer
+        { title: 'The Final Ascent', duration: 172, audioUrl: 'audio/superacion/the-final-ascent.m4a', photo: 'https://images.unsplash.com/photo-1559208722-abb22e0e918e' }, // cima cerca del cumbre
+        { title: 'The Ascent',       duration: 172, audioUrl: 'audio/superacion/the-ascent.m4a',       photo: 'https://images.unsplash.com/photo-1601224748193-d24f166b5c77' }, // escalando pared de roca
       ],
     },
     {
@@ -69,11 +69,11 @@ const MOCK_DB = {
       title: 'Zona de Trabajo',
       desc: 'Música instrumental pensada para trabajar sin distracciones.',
       tracks: [
-        { title: 'Deep Stillness',     duration: 178, audioUrl: 'audio/foco/deep-stillness.m4a' },
-        { title: 'Infinite Stillness', duration: 166, audioUrl: 'audio/foco/infinite-stillness.m4a' },
-        { title: 'Still Life',         duration: 179, audioUrl: 'audio/foco/still-life.m4a' },
-        { title: 'Warm Currents',      duration: 171, audioUrl: 'audio/foco/warm-currents.m4a' },
-        { title: 'Warm Cycle',         duration: 159, audioUrl: 'audio/foco/warm-cycle.m4a' },
+        { title: 'Deep Stillness',     duration: 178, audioUrl: 'audio/foco/deep-stillness.m4a',     photo: 'https://images.unsplash.com/photo-1473893604213-3df9c15611c0' },
+        { title: 'Infinite Stillness', duration: 166, audioUrl: 'audio/foco/infinite-stillness.m4a', photo: 'https://images.unsplash.com/photo-1655815226187-113f3b3d7510' },
+        { title: 'Still Life',         duration: 179, audioUrl: 'audio/foco/still-life.m4a',         photo: 'https://images.unsplash.com/photo-1694636775862-c35027446a0f' },
+        { title: 'Warm Currents',      duration: 171, audioUrl: 'audio/foco/warm-currents.m4a',      photo: 'https://images.unsplash.com/photo-1613578519724-22fdb5d06388' },
+        { title: 'Warm Cycle',         duration: 159, audioUrl: 'audio/foco/warm-cycle.m4a',         photo: 'https://images.unsplash.com/photo-1561921348-89b3db247320' },
       ],
     },
     {
@@ -82,11 +82,11 @@ const MOCK_DB = {
       title: 'Estado de Flow',
       desc: 'Una selección larga para sostener el estado de flujo creativo.',
       tracks: [
-        { title: 'Warm Currents',      duration: 171, audioUrl: 'audio/foco/warm-currents.m4a' },
-        { title: 'Still Life',         duration: 179, audioUrl: 'audio/foco/still-life.m4a' },
-        { title: 'Warm Cycle',         duration: 159, audioUrl: 'audio/foco/warm-cycle.m4a' },
-        { title: 'Infinite Stillness', duration: 166, audioUrl: 'audio/foco/infinite-stillness.m4a' },
-        { title: 'Deep Stillness',     duration: 178, audioUrl: 'audio/foco/deep-stillness.m4a' },
+        { title: 'Warm Currents',      duration: 171, audioUrl: 'audio/foco/warm-currents.m4a',      photo: 'https://images.unsplash.com/photo-1613578519724-22fdb5d06388' },
+        { title: 'Still Life',         duration: 179, audioUrl: 'audio/foco/still-life.m4a',         photo: 'https://images.unsplash.com/photo-1694636775862-c35027446a0f' },
+        { title: 'Warm Cycle',         duration: 159, audioUrl: 'audio/foco/warm-cycle.m4a',         photo: 'https://images.unsplash.com/photo-1561921348-89b3db247320' },
+        { title: 'Infinite Stillness', duration: 166, audioUrl: 'audio/foco/infinite-stillness.m4a', photo: 'https://images.unsplash.com/photo-1655815226187-113f3b3d7510' },
+        { title: 'Deep Stillness',     duration: 178, audioUrl: 'audio/foco/deep-stillness.m4a',     photo: 'https://images.unsplash.com/photo-1473893604213-3df9c15611c0' },
       ],
     },
     {
@@ -95,12 +95,12 @@ const MOCK_DB = {
       title: 'Sube el Ánimo',
       desc: 'Canciones para recuperar la sonrisa en cualquier momento.',
       tracks: [
-        { title: 'Morning Light',  duration: 173, audioUrl: 'audio/alegria/morning-light.m4a' },
-        { title: 'Morning Stride', duration: 173, audioUrl: 'audio/alegria/morning-stride.m4a' },
-        { title: 'High Spirits',   duration: 155, audioUrl: 'audio/alegria/high-spirits.m4a' },
-        { title: 'Island Hop',     duration: 175, audioUrl: 'audio/alegria/island-hop.m4a' },
-        { title: 'Summer Sway',    duration: 182, audioUrl: 'audio/alegria/summer-sway.m4a' },
-        { title: 'Clear Ascent',   duration: 176, audioUrl: 'audio/alegria/clear-ascent.m4a' },
+        { title: 'Morning Light',  duration: 173, audioUrl: 'audio/alegria/morning-light.m4a',  photo: 'https://images.unsplash.com/photo-1593264787646-f07221d3b7de' }, // amanecer entrando por la ventana
+        { title: 'Morning Stride', duration: 173, audioUrl: 'audio/alegria/morning-stride.m4a', photo: 'https://images.unsplash.com/photo-1520206444322-d2df0dd4e78e' }, // caminata al sol de mañana
+        { title: 'High Spirits',   duration: 155, audioUrl: 'audio/alegria/high-spirits.m4a',   photo: 'https://images.unsplash.com/photo-1611244806964-91d204d4a2a7' }, // confeti y manos arriba
+        { title: 'Island Hop',     duration: 175, audioUrl: 'audio/alegria/island-hop.m4a',     photo: 'https://images.unsplash.com/photo-1541417904950-b855846fe074' }, // isla tropical desde el aire
+        { title: 'Summer Sway',    duration: 182, audioUrl: 'audio/alegria/summer-sway.m4a',    photo: 'https://images.unsplash.com/photo-1532028205213-4c4fa81306d4' }, // campo de verano al viento
+        { title: 'Clear Ascent',   duration: 176, audioUrl: 'audio/alegria/clear-ascent.m4a',   photo: 'https://images.unsplash.com/photo-1774252338397-167cef2c68fd' }, // globo aerostático en cielo despejado
       ],
     },
     {
@@ -109,11 +109,11 @@ const MOCK_DB = {
       title: 'Cero Estrés',
       desc: 'Música ambiental para bajar el estrés acumulado.',
       tracks: [
-        { title: 'Afloat',             duration: 119, audioUrl: 'audio/relax/afloat.m4a' },
-        { title: 'Weightless',         duration: 181, audioUrl: 'audio/relax/weightless.m4a' },
-        { title: 'Deep Resonance',     duration: 168, audioUrl: 'audio/relax/deep-resonance.m4a' },
-        { title: 'Deep Stillness',     duration: 162, audioUrl: 'audio/relax/deep-stillness.m4a' },
-        { title: 'Deepening Solitude', duration: 174, audioUrl: 'audio/relax/deepening-solitude.m4a' },
+        { title: 'Afloat',             duration: 119, audioUrl: 'audio/relax/afloat.m4a',             photo: 'https://images.unsplash.com/photo-1734830186361-6001d1a7ae37' }, // pequeño bote en agua calma
+        { title: 'Weightless',         duration: 181, audioUrl: 'audio/relax/weightless.m4a',         photo: 'https://images.unsplash.com/photo-1445112098124-3e76dd67983c' }, // flotando bajo el agua
+        { title: 'Deep Resonance',     duration: 168, audioUrl: 'audio/relax/deep-resonance.m4a',     photo: 'https://images.unsplash.com/photo-1503891617560-5b8c2e28cbf6' }, // ondas de agua en primer plano
+        { title: 'Deep Stillness',     duration: 162, audioUrl: 'audio/relax/deep-stillness.m4a',     photo: 'https://images.unsplash.com/photo-1614640672303-537679057c33' }, // luna reflejada en lago nocturno
+        { title: 'Deepening Solitude', duration: 174, audioUrl: 'audio/relax/deepening-solitude.m4a', photo: 'https://images.unsplash.com/photo-1532979772520-f2763956cce0' }, // muelle en la niebla
       ],
     },
     {
@@ -122,11 +122,11 @@ const MOCK_DB = {
       title: 'Supera Cualquier Reto',
       desc: 'Música motivacional para acompañar procesos de superación.',
       tracks: [
-        { title: 'The Ascent',       duration: 172, audioUrl: 'audio/superacion/the-ascent.m4a' },
-        { title: 'Steady Stride',    duration: 173, audioUrl: 'audio/superacion/steady-stride.m4a' },
-        { title: 'The Ascent II',    duration: 175, audioUrl: 'audio/superacion/the-ascent-ii.m4a' },
-        { title: 'Grand Ascent',     duration: 173, audioUrl: 'audio/superacion/grand-ascent.m4a' },
-        { title: 'The Final Ascent', duration: 172, audioUrl: 'audio/superacion/the-final-ascent.m4a' },
+        { title: 'The Ascent',       duration: 172, audioUrl: 'audio/superacion/the-ascent.m4a',       photo: 'https://images.unsplash.com/photo-1601224748193-d24f166b5c77' },
+        { title: 'Steady Stride',    duration: 173, audioUrl: 'audio/superacion/steady-stride.m4a',    photo: 'https://images.unsplash.com/photo-1586022045497-31fcf76fa6cc' },
+        { title: 'The Ascent II',    duration: 175, audioUrl: 'audio/superacion/the-ascent-ii.m4a',    photo: 'https://images.unsplash.com/photo-1507553156678-fd07e00a106b' },
+        { title: 'Grand Ascent',     duration: 173, audioUrl: 'audio/superacion/grand-ascent.m4a',     photo: 'https://images.unsplash.com/photo-1775334006478-865fa1b777de' },
+        { title: 'The Final Ascent', duration: 172, audioUrl: 'audio/superacion/the-final-ascent.m4a', photo: 'https://images.unsplash.com/photo-1559208722-abb22e0e918e' },
       ],
     },
   ],

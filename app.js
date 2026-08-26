@@ -498,7 +498,7 @@ function moodSongList(tracks, playlists) {
       title: song.title,
       duration: song.duration,
       href: `player.html?playlist=${encodeURIComponent(p.id)}&t=${i}`,
-      photo: p.photo,
+      photo: song.photo || p.photo,
     }))
   );
   return [...own, ...fromPlaylists];
@@ -579,7 +579,7 @@ async function initPlaylistPage() {
   listEl.innerHTML = playlist.tracks.map((song, i) => `
     <a class="tracklist-row" href="player.html?playlist=${encodeURIComponent(playlist.id)}&t=${i}">
       <span class="tl-index">${String(i + 1).padStart(2, '0')}</span>
-      ${songArtHTML(mood, song.title, '', playlist.photo)}
+      ${songArtHTML(mood, song.title, '', song.photo || playlist.photo)}
       <span class="tl-play">${UI_ICONS.play}</span>
       <span class="tl-title">${escapeHtml(song.title)}</span>
       <span class="tl-duration">${fmtTime(song.duration)}</span>
@@ -687,7 +687,7 @@ function loadTrack(index) {
   } else {
     document.getElementById('mood-badge').textContent = `MOOD ACTUAL: ${playerMood ? playerMood.name.toUpperCase() : ''}`;
   }
-  document.getElementById('player-art').innerHTML = songArtHTML(playerMood, t.title, 'songart--lg', playerPlaylist && playerPlaylist.photo);
+  document.getElementById('player-art').innerHTML = songArtHTML(playerMood, t.title, 'songart--lg', t.photo || (playerPlaylist && playerPlaylist.photo));
   document.getElementById('player-title').textContent = t.title;
   document.getElementById('player-desc').textContent = playerPlaylist ? playerPlaylist.desc : t.desc;
 
@@ -734,7 +734,7 @@ function renderQueue() {
   listEl.innerHTML = rotated.map(({ song, i }, pos) => `
     <button class="tracklist-row${pos === 0 ? ' is-current' : ''}" type="button" data-index="${i}">
       <span class="tl-index">${pos === 0 ? UI_ICONS.playing : String(i + 1).padStart(2, '0')}</span>
-      ${songArtHTML(playerMood, song.title, '', playerPlaylist && playerPlaylist.photo)}
+      ${songArtHTML(playerMood, song.title, '', song.photo || (playerPlaylist && playerPlaylist.photo))}
       <span class="tl-play">${pos === 0 ? UI_ICONS.pause : UI_ICONS.play}</span>
       <span class="tl-title">${escapeHtml(song.title)}</span>
       <span class="tl-duration">${fmtTime(song.duration)}</span>
