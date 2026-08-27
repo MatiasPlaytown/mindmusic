@@ -531,8 +531,8 @@ h1.hero-title {
   color: var(--ink);
 }
 
-/* ---------- cover art: the record/sleeve system ---------- */
-/* .cover draws a sleeve; inside it, .disc draws a vinyl record with grooves.
+/* ---------- cover art: the sleeve system ---------- */
+/* .cover draws a sleeve; .cover-face holds the image.
    .cover--stack adds two peeking sleeve edges behind, for playlists. */
 
 /* `.cover` es sólo la caja: la funda de adelante (con la imagen) es
@@ -566,26 +566,24 @@ h1.hero-title {
   background-repeat: no-repeat;
 }
 
-/* ---------- arte por canción: mood + nombre ---------- */
-/* Cada tema recibe su propio cuadrado: la foto de su estado recortada en un
-   punto distinto, capas de color con la tinta del mood giradas según el
-   nombre, el ícono del estado y las iniciales del tema. La semilla la calcula
-   songArtVars() en app.js, así una misma canción siempre se ve igual. */
+/* ---------- arte por canción: su foto + la tinta del estado ---------- */
+/* Cada tema tiene su propia foto y esa foto es la portada: encima va apenas
+   un velo con la tinta del estado (para que se lea de qué mood es) y nada
+   más. El recorte y el ángulo del velo salen de songArtVars() en app.js, así
+   una misma canción siempre se ve igual. */
 
 .songart,
 .cover--art .cover-face {
   background-image:
     linear-gradient(var(--sa-angle, 140deg),
-      color-mix(in srgb, var(--m-ink, var(--brass)) 55%, transparent) 10%,
-      color-mix(in srgb, var(--ink) 88%, transparent) 95%),
+      color-mix(in srgb, var(--m-ink, var(--brass)) 30%, transparent) 10%,
+      color-mix(in srgb, var(--ink) 46%, transparent) 95%),
     radial-gradient(circle at var(--sa-x1, 30%) var(--sa-y1, 26%),
-      color-mix(in srgb, var(--m-ink, var(--brass)) 62%, transparent), transparent 58%),
-    radial-gradient(circle at var(--sa-x2, 68%) var(--sa-y2, 74%),
-      color-mix(in srgb, var(--paper) 20%, transparent), transparent 48%),
+      color-mix(in srgb, var(--m-ink, var(--brass)) 26%, transparent), transparent 62%),
     var(--sa-photo, none),
     linear-gradient(155deg, color-mix(in srgb, var(--m-ink, var(--brass)) 30%, var(--surface)), var(--surface-2));
   background-size: cover;
-  background-position: center, center, center, var(--sa-pos, center), center;
+  background-position: center, center, var(--sa-pos, center), center;
   background-repeat: no-repeat;
 }
 
@@ -611,51 +609,12 @@ h1.hero-title {
   opacity: 0.5;
 }
 .songart-glyph svg { width: 100%; height: 100%; }
-.songart-initials {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  color: var(--paper);
-  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
-}
-
 .songart--lg {
   width: 116px;
   height: 116px;
   border-radius: var(--rm);
 }
 .songart--lg .songart-glyph { top: 9px; right: 9px; width: 22px; height: 22px; }
-.songart--lg .songart-initials { font-size: 34px; letter-spacing: 1px; }
-
-.cover .disc {
-  width: 72%;
-  height: 72%;
-  border-radius: 50%;
-  background:
-    repeating-radial-gradient(circle at center, rgba(0,0,0,0.22) 0 2px, transparent 2px 6px),
-    radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--m-ink, var(--brass)) 55%, #000 10%), var(--ink) 72%);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-  position: relative;
-}
-.cover .disc::after {
-  content: '';
-  position: absolute;
-  inset: 40%;
-  border-radius: 50%;
-  background: var(--paper);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--m-ink, var(--brass)) 70%, #000 10%);
-}
-.disc-icon {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--paper);
-  opacity: 0.85;
-}
-.disc-icon svg { width: 30%; height: 30%; }
 
 .cover-mood-badge {
   position: absolute;
@@ -720,21 +679,20 @@ h1.hero-title {
   text-align: center;
 }
 
-/* Iniciales del tema impresas sobre la funda, como el título en el lomo. */
-.cover-initials {
+/* La funda de un tema suelto no lleva texto: sólo su foto y, en una esquina,
+   el ícono del estado como firma discreta. */
+.cover-glyph {
   position: absolute;
-  left: 10px;
-  bottom: 8px;
+  right: 9px;
+  bottom: 9px;
   z-index: 2;
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
   color: var(--paper);
-  opacity: 0.9;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.55);
+  opacity: 0.72;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.55));
 }
+.cover-glyph svg { width: 100%; height: 100%; }
 
 .cover-count {
   position: absolute;

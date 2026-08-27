@@ -104,18 +104,6 @@ function hashString(str) {
   return h >>> 0;
 }
 
-// Iniciales del tema (hasta 2 palabras): el arte de portada también tiene que
-// leerse como "esta canción", no sólo como "este estado de ánimo".
-function songInitials(title) {
-  return String(title || '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase() || '♪';
-}
-
 // Variables CSS del arte de un tema suelto: la foto del mood (recortada en un
 // punto distinto para cada canción) + capas de color con su tinta, giradas
 // según el nombre. Las consume `.songart` / `.cover--art` en styles.css.
@@ -135,40 +123,40 @@ function songArtVars(mood, title, photoBase) {
   ].join(';');
 }
 
-// Cuadrado de arte de un tema: se usa en las filas de tracklist, en la cola
-// del player y (en grande) arriba del título del reproductor.
+// Cuadrado de arte de un tema: su foto propia, apenas teñida con la tinta del
+// estado. Se usa en las filas de tracklist, en la cola del player y (en
+// grande) arriba del título del reproductor.
 function songArtHTML(mood, title, modifier = '', photoBase) {
   const icon = mood ? (MOOD_ICONS[mood.icon] || '') : '';
   return `
     <span class="songart${modifier ? ' ' + modifier : ''}" style="${songArtVars(mood, title, photoBase)}" aria-hidden="true">
       <span class="songart-glyph">${icon}</span>
-      <span class="songart-initials">${escapeHtml(songInitials(title))}</span>
     </span>
   `;
 }
 
-// Portada tipo disco/funda: cada ítem de audio se dibuja como un vinilo
-// dentro de una funda con el color del mood. Las playlists se ven como una
-// pila de fundas (varios discos adentro) sobre la foto del estado y con la
-// palabra PLAYLIST bien visible; los temas sueltos, sobre su propio arte.
+// Portada tipo funda: las playlists se ven como una pila de fundas (varios
+// discos adentro) sobre su foto y con la palabra PLAYLIST bien visible; los
+// temas sueltos, como la foto propia de esa canción firmada apenas con el
+// ícono del estado.
 function coverHTML(kind, mood, trackCount, title, photo) {
   const isPlaylist = kind === 'playlist';
   const icon = mood ? (MOOD_ICONS[mood.icon] || '') : '';
   const moodBadge = mood ? `<span class="cover-mood-badge">${escapeHtml(mood.name)}</span>` : '';
   // La playlist se ve como la foto del estado dentro de una pila de fundas:
   // sin disco adelante, que tapaba la imagen.
-  const disc = isPlaylist ? '' : `<div class="disc"><div class="disc-icon">${icon}</div></div>`;
   const style = isPlaylist ? playlistCoverVars(mood, photo) : songArtVars(mood, title, photo);
-  // La playlist grita PLAYLIST; el tema suelto firma la funda con sus
-  // iniciales, para que la portada sea de esa canción y no del estado entero.
-  const foot = isPlaylist
+  // La playlist grita PLAYLIST; el tema suelto muestra su propia foto, sin
+  // disco ni iniciales que la tapen — la portada tiene que leerse como esa
+  // canción y no como una etiqueta.
+  const face = isPlaylist
     ? `${trackCount != null ? `<span class="cover-count">${trackCount} temas</span>` : ''}
        <div class="cover-foot"><span class="cover-kind">Playlist</span></div>`
-    : `<span class="cover-initials">${escapeHtml(songInitials(title))}</span>`;
+    : `<span class="cover-glyph">${icon}</span>`;
 
   return `
     <div class="cover ${isPlaylist ? 'cover--stack' : 'cover--art'}" style="${style}">
-      <div class="cover-face">${disc}${foot}</div>
+      <div class="cover-face">${face}</div>
       ${moodBadge}
     </div>
   `;
@@ -209,6 +197,24 @@ function saveProfile(p) {
 
 function resetLocalData() {
   localStorage.removeItem(PROFILE_KEY);
+}
+
+// El nombre por defecto ('Invitado') no es un nombre: es el placeholder de
+// alguien que todavía no lo cargó en ajustes. El saludo de la home sólo suma
+// el nombre cuando es propio.
+function customName() {
+  const name = (getProfile().name || '').trim();
+  return name && name !== DEFAULT_PROFILE.name ? name : '';
+}
+
+// Saludo de la home: sin nombre cargado queda la pregunta sola.
+function greetingText() {
+  const name = customName();
+  return name ? `¿Cómo te sentís hoy, ${name}?` : '¿Cómo te sentís hoy?';
+}
+
+function refreshGreeting() {
+  document.querySelectorAll('.js-greet-title').forEach((el) => (el.textContent = greetingText()));
 }
 
 // ───────────────────────── MOCK API ─────────────────────────
@@ -278,6 +284,7 @@ function initNav() {
   document.querySelectorAll('.js-avatar').forEach((el) => (el.textContent = initial));
   document.querySelectorAll('.js-greet-name').forEach((el) => (el.textContent = profile.name));
   document.querySelectorAll('.nav-user-name').forEach((el) => (el.textContent = profile.name));
+  refreshGreeting();
 }
 
 // ───────────────────────── HOME ─────────────────────────
@@ -1102,6 +1109,7 @@ function saveEditModal() {
   renderPerfil();
   document.querySelectorAll('.js-avatar').forEach((el) => (el.textContent = value.charAt(0).toUpperCase()));
   document.querySelectorAll('.js-greet-name, .nav-user-name').forEach((el) => (el.textContent = value));
+  refreshGreeting();
   showToast('Perfil actualizado');
 }
 
