@@ -268,10 +268,65 @@ async function apiGet(path) {
   return Array.isArray(json.results) ? json.results : [];
 }
 
-// Devuelve `[{ item, data }]`: el post tal como lo manda la API y su JSON ya
-// parseado. Una request para la lista, más una por cada ítem cuyo JSON no haya
-// entrado entero en el extracto.
-async function apiFetchCategory(slug) {
+// ── Fuente principal: la REST estándar de WordPress (`wp/v2`) ───────────────
+// El `articles?category=` del plugin `content/v2` devuelve 404 para TODO en el
+// sitio real (también con categorías que tienen posts, y también en el sitio de
+// Retofit): sólo le anda `article?id=`. La REST del core sí responde, manda
+// CORS abierto y trae el cuerpo completo de todos los posts de la categoría en
+// un solo viaje — así que es la fuente principal, y `content/v2` queda de
+// respaldo (es además lo que imita `tools/serve-local.js`).
+const WP_API_BASE = API_BASE.replace(/\/content\/v2$/, '/wp/v2');
+
+// slug de categoría → id numérico (el core filtra posts por id, no por slug).
+// Una sola request para las tres, compartida por toda la carga de página.
+let WP_CATEGORY_IDS = null;
+function wpCategoryIds() {
+  if (!WP_CATEGORY_IDS) {
+    const slugs = Object.values(WP_CATEGORY).join(',');
+    WP_CATEGORY_IDS = fetch(`${WP_API_BASE}/categories?slug=${slugs}&per_page=100&_fields=id,slug`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} al pedir las categorías`);
+        return res.json();
+      })
+      .then((cats) => new Map(cats.map((c) => [c.slug, c.id])));
+    WP_CATEGORY_IDS.catch(() => { WP_CATEGORY_IDS = null; }); // que se pueda reintentar
+  }
+  return WP_CATEGORY_IDS;
+}
+
+async function wpFetchCategory(slug) {
+  const catId = (await wpCategoryIds()).get(slug);
+  if (catId == null) return []; // la categoría todavía no existe en WordPress
+  const res = await fetch(`${WP_API_BASE}/posts?categories=${catId}&per_page=${API_LIMIT}`
+    + '&_embed=wp:featuredmedia&_fields=id,slug,title,content,_links,_embedded');
+  if (!res.ok) throw new Error(`HTTP ${res.status} al pedir los posts de "${slug}"`);
+  const posts = await res.json();
+  return posts.map((post) => {
+    const media = post._embedded && post._embedded['wp:featuredmedia'];
+    // Misma forma de ítem que devuelve `content/v2`, para que los mapeos de
+    // abajo no sepan de dónde vino.
+    const item = {
+      id: post.id,
+      slug: post.slug,
+      title: decodeHtml(post.title && post.title.rendered),
+      thumbnail: (media && media[0] && media[0].source_url) || '',
+    };
+    return { item, data: parsePostJson(post.content && post.content.rendered) };
+  });
+}
+
+function decodeHtml(html) {
+  if (!html) return '';
+  try {
+    return new DOMParser().parseFromString(String(html), 'text/html').body.textContent || '';
+  } catch (e) {
+    return String(html);
+  }
+}
+
+// Respaldo: el plugin `content/v2`. Una request para la lista, más una por cada
+// ítem cuyo JSON no haya entrado entero en el extracto.
+async function pluginFetchCategory(slug) {
   const list = await apiGet(`articles?category=${encodeURIComponent(slug)}&limit=${API_LIMIT}`);
   return Promise.all(list.map(async (item) => {
     const fast = parsePostJson(item.short_description);
@@ -279,6 +334,17 @@ async function apiFetchCategory(slug) {
     const [detail] = await apiGet(`article?id=${encodeURIComponent(item.id)}`);
     return { item: Object.assign({}, item, detail), data: parsePostJson(detail && detail.content) };
   }));
+}
+
+// Devuelve `[{ item, data }]`: el post tal como lo manda la API y su JSON ya
+// parseado.
+async function apiFetchCategory(slug) {
+  try {
+    return await wpFetchCategory(slug);
+  } catch (e) {
+    console.warn(`[contenido] wp/v2 no respondió para "${slug}", pruebo content/v2:`, e.message);
+    return pluginFetchCategory(slug);
+  }
 }
 
 // El JSON llega envuelto en HTML y con las comillas tipografiadas por

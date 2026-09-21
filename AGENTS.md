@@ -37,6 +37,8 @@ PWA de música asociada a estados de ánimo, para un club de Playtown (hermana d
 
 Base: `https://contenidos.vip/mindmusic/wp-json/content/v2`
 
+> ⚠️ **La fuente principal hoy es la REST del core (`wp/v2`), no `content/v2`.** En el sitio real el `articles?category=` del plugin devuelve 404 para **todo** (también con categorías que tienen posts, y también en el sitio de Retofit); sólo le anda `article?id=`. `apiFetchCategory()` va primero por `wp/v2` — `categories?slug=…` para pasar de slug a id (una request, compartida) y `posts?categories=<id>&per_page=100&_embed=wp:featuredmedia`, que trae el cuerpo de todos los posts de la categoría en **un solo viaje** — y sólo si eso falla cae a `content/v2` (`pluginFetchCategory()`), que es además lo que imita `tools/serve-local.js`. `wpFetchCategory()` arma el mismo ítem (`id`, `slug`, `title`, `thumbnail`) que devolvía el plugin, así que los mapeos no saben de dónde vino. Todo lo que sigue sobre `content/v2` describe el respaldo.
+
 **Ojo: este sitio expone `content/v2`, no el `api/v3` de Retofit / Mis Gastos en
 Orden** (el plugin `appapi`, que sirve `mobile_content` ya listo, no está activo
 acá). Es otro plugin y trabaja distinto:

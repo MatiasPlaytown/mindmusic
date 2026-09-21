@@ -21,6 +21,15 @@ curl -s "https://contenidos.vip/mindmusic/wp-json/content/v2/categories"
 Después de importar, ahí tienen que aparecer `estados-de-animo`, `playlists` y
 `audios`.
 
+**Ojo:** el endpoint de lista del plugin (`articles?category=…`) devuelve 404
+para todo en el sitio real, así que **no sirve para chequear si el import
+entró**. La app lee por la REST estándar de WordPress (`wp/v2`) y deja
+`content/v2` de respaldo. Para ver qué hay cargado:
+
+```bash
+curl -s "https://contenidos.vip/mindmusic/wp-json/wp/v2/posts?per_page=100&_fields=id,slug,modified"
+```
+
 ## Antes de importar
 
 Conviene **borrar el post de prueba** que hoy está en "Sin categoría"
